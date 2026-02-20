@@ -1,0 +1,15 @@
+# Conda environment for Tello + YOLOv8 detection
+# Create:  conda env create -f environment.yml
+# Activate: conda activate tello-yolo
+
+name: tello-yolo
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python>=3.9,<3.12
+  - pip
+  - pip:
+    - djitellopy>=2.5.0
+    - opencv-python>=4.8.0
+    - ultralytics>=8.0.0
