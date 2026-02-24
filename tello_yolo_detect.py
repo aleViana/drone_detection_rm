@@ -20,9 +20,9 @@ from detector import YOLODetector
 
 def main():
     # --- Config (edit as needed) ---
-    model_path = "yolov8n.pt"  # downloads on first run; or use "models/arduino_car.pt"
+    model_path = '/Users/alejandroviana/Desktop/drone_detection_rm/runs/detect/runs/detect/arduino_car3/weights/best.pt'# downloads on first run; or use "models/arduino_car.pt"
     conf_threshold = 0.5
-    target_classes = None  # e.g. ["person", "car"] or None for all COCO classes
+    target_classes = ["ArduinoCar"]  # e.g. ["person", "car"] or None for all COCO classes
     display_size = (960, 720)  # resize for display (Tello is 720p)
     # ------------------------------
 
