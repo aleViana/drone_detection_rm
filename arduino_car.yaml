@@ -6,7 +6,7 @@
 # ---------------------------------------------------------------------------
 # Paths
 # ---------------------------------------------------------------------------
-path: /Users/alejandroviana/Desktop/drone_detection_rm/datasetTest1/drone_vision.v1i.yolov8  # dataset root
+path: /home/ale/drone_detection_rm/datasetTest1/drone_vision.v3i.yolov8  # dataset root
 
 train: train/images   # 66 images + train/labels/
 val: valid/images   # 22 images + valid/labels/
@@ -18,7 +18,7 @@ nc: 1          # ArduinoCar is the only annotated object (all 96 bboxes).
                # "objects" (id 0 in the COCO JSON) is a supercategory with no
                # direct annotations and is excluded here.
 names:
-  0: ArduinoCar
+  0: ArduinoCar3
 
 # ---------------------------------------------------------------------------
 # Training example

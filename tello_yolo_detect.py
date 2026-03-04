@@ -21,9 +21,9 @@ from estimation import positionEstimator
 
 def main():
     # --- Config (edit as needed) ---
-    model_path = '/Users/alejandroviana/Desktop/drone_detection_rm/runs/detect/runs/detect/drone_vision/weights/best.pt'
+    model_path = '/home/ale/drone_detection_rm/runs/detect/carv32/weights/best.pt'
     conf_threshold = 0.5
-    target_classes = ["ArduinoCar"]  # e.g. ["person", "car"] or None for all COCO classes
+    target_classes = ["ArduinoCar3"]  # e.g. ["person", "car"] or None for all COCO classes
     display_size = (960, 720)  # resize for display (Tello is 720p)
     # ------------------------------
 

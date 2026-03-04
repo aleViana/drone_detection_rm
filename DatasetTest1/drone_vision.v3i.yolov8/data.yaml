@@ -1,0 +1,13 @@
+train: ../train/images
+val: ../valid/images
+
+
+nc: 1
+names: ['ArduinoCar3']
+
+roboflow:
+  workspace: arduino-object-target
+  project: drone_vision
+  version: 3
+  license: Private
+  url: https://app.roboflow.com/arduino-object-target/drone_vision/3

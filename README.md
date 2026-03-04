@@ -1,6 +1,6 @@
 # Tello + YOLOv8 real-time object detection
 
-Real-time object detection on the **DJI Tello** video stream using **YOLOv8** (Ultralytics) and **OpenCV**, with **djitellopy** for drone connection. Bounding box coordinates are printed in real time.
+Real-time object detection on the **DJI Tello** video stream using **YOLOv8** (Ultralytics) and **OpenCV**, with **djitellopy** for drone connection. Bounding box coordinates are printed in real time. The target is a ground robotic car 
 
 ## Setup
 
@@ -10,7 +10,7 @@ Real-time object detection on the **DJI Tello** video stream using **YOLOv8** (U
 
 ```bash
 conda env create -f environment.yml
-conda activate tello-yolo
+conda activate drone_vision
 ```
 
 Or create the env manually and install with pip:
@@ -33,25 +33,7 @@ pip install -r requirements.txt
 
 Use this checklist to confirm the pipeline works **before** training a custom model.
 
-### 1. Test dependencies and YOLOv8 (no drone)
 
-Run detection on your **webcam** to verify the environment and pretrained YOLOv8:
-
-```bash
-python test_without_drone.py
-```
-
-- A window should open with the webcam feed and bounding boxes.
-- Terminal should print lines like `bbox=[x1,y1,x2,y2]  conf=0.xx  class=...`.
-- Press **q** to quit.
-
-If this fails, fix your Python/OpenCV/Ultralytics setup before using the Tello.
-
-### 2. Test Tello connection only
-
-- Power on the Tello.
-- Connect your computer to the Tello’s WiFi (e.g. `TELLO-XXXXXX`).
-- Run the full script:
 
 ```bash
 python tello_yolo_detect.py
