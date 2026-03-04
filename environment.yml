@@ -1,8 +1,8 @@
 # Conda environment for Tello + YOLOv8 detection
 # Create:  conda env create -f environment.yml
-# Activate: conda activate tello-yolo
+# Activate: conda activate drone_vision
 
-name: tello-yolo
+name: drone_vision
 channels:
   - conda-forge
   - defaults

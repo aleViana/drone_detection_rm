@@ -1,0 +1,12 @@
+train: /Users/alejandroviana/Desktop/drone_detection_rm/DatasetTest1/drone_vision.v2i.yolov8/train/images
+val: /Users/alejandroviana/Desktop/drone_detection_rm/DatasetTest1/drone_vision.v2i.yolov8/valid/images
+
+nc: 1
+names: ['ArduinoCar']
+
+roboflow:
+  workspace: arduino-object-target
+  project: drone_vision
+  version: 2
+  license: Private
+  url: https://app.roboflow.com/arduino-object-target/drone_vision/2

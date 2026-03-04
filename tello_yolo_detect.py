@@ -16,15 +16,25 @@ import time
 import cv2
 from djitellopy import Tello
 from detector import YOLODetector
+from estimation import positionEstimator
 
 
 def main():
     # --- Config (edit as needed) ---
-    model_path = '/Users/alejandroviana/Desktop/drone_detection_rm/runs/detect/runs/detect/arduino_car3/weights/best.pt'# downloads on first run; or use "models/arduino_car.pt"
+    model_path = '/Users/alejandroviana/Desktop/drone_detection_rm/runs/detect/runs/detect/drone_vision/weights/best.pt'
     conf_threshold = 0.5
     target_classes = ["ArduinoCar"]  # e.g. ["person", "car"] or None for all COCO classes
     display_size = (960, 720)  # resize for display (Tello is 720p)
     # ------------------------------
+
+    # ArduinoCar approximate width: 15 cm; Tello focal length calibrated at 902.55 px
+    estimator = positionEstimator(
+        focal_length=902.55,
+        known_width=24,
+        frame_width=display_size[0],
+        frame_height=display_size[1],
+        window_size=5,
+    )
 
     print("Loading YOLOv8 model...")
     detector = YOLODetector(
@@ -65,14 +75,35 @@ def main():
         detections = detector.detect(frame_display)
         detector.draw(frame_display, detections)
 
-        # Real-time bounding box coordinate output
+        # Real-time bounding box + position output
         for d in detections:
             x1, y1, x2, y2 = d["bbox"]
-            print(
-                f"bbox=[{x1},{y1},{x2},{y2}]  "
-                f"conf={d['confidence']:.3f}  "
-                f"class={d['class_name']}"
-            )
+            pos = estimator.estimate_ps(d["bbox"])
+            if pos:
+                print(
+                    f"bbox=[{x1},{y1},{x2},{y2}]  "
+                    f"conf={d['confidence']:.3f}  "
+                    f"class={d['class_name']}  "
+                    f"dist={pos['distance']:.1f}cm  "
+                    f"x={pos['x_offset']:+.1f}cm  "
+                    f"y={pos['y_offset']:+.1f}cm"
+                )
+                # Overlay position text below the bounding box
+                overlay = (
+                    f"d={pos['distance']:.0f}cm "
+                    f"x={pos['x_offset']:+.0f}cm "
+                    f"y={pos['y_offset']:+.0f}cm"
+                )
+                cv2.putText(
+                    frame_display, overlay, (x1, y2 + 18),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.55, (0, 200, 255), 2,
+                )
+            else:
+                print(
+                    f"bbox=[{x1},{y1},{x2},{y2}]  "
+                    f"conf={d['confidence']:.3f}  "
+                    f"class={d['class_name']}"
+                )
 
         cv2.imshow("Tello YOLOv8", frame_display)
         if cv2.waitKey(1) & 0xFF == ord("q"):
