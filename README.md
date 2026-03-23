@@ -1,84 +1,92 @@
-# Tello + YOLOv8 real-time object detection
+# Drone YOLOv8 Real-Time Object Detection & PID Flight Controller
 
-Real-time object detection on the **DJI Tello** video stream using **YOLOv8** (Ultralytics) and **OpenCV**, with **djitellopy** for drone connection. Bounding box coordinates are printed in real time. The target is a ground robotic car 
+Real-time object detection on a **DJI Tello** video stream using **YOLOv8** (Ultralytics) and **OpenCV**, with autonomous target-following via PID flight control. The target is a ground robotic Arduino car.
 
-## Setup
+## How It Works
 
-1. Connect your computer to the Tello WiFi network.
+The system runs a four-stage pipeline on every video frame:
 
-2. **Conda (recommended)** — create and activate the environment:
-
-```bash
-conda env create -f environment.yml
-conda activate drone_vision
+```
+Tello camera → YOLODetector → positionEstimator → FlightController → Tello RC commands
 ```
 
+1. **Detection** — A fine-tuned YOLOv8 model identifies the Arduino car in the live video frame and returns its bounding box.
+2. **Distance Estimation** — The bounding box pixel width is converted to a real-world distance (cm) using the pinhole camera formula, smoothed with a rolling average.
+3. **PID Control** — Three independent PID controllers compute yaw, vertical, and forward/backward RC commands to keep the car centered in frame at a set standoff distance.
+4. **RC Output** — Commands are sent to the Tello via `send_rc_control(left_right, forward_backward, up_down, yaw)`. When no target is detected, the drone hovers and PID state is reset to prevent integral windup.
 
-**Without conda** — use a venv and pip:
+## Requirements
+
+- DJI Tello drone
+- Python 3.9+
+- Wi-Fi connection to the Tello
 
 ```bash
 pip install -r requirements.txt
 ```
 
----
+| Package | Purpose |
+|---|---|
+| `ultralytics` | YOLOv8 model inference and training |
+| `opencv-python` | Video capture and frame rendering |
+| `djitellopy` | Tello SDK wrapper |
 
-## Steps to test before training the model
+## Usage
 
-Use this checklist to confirm the pipeline works **before** training a custom model.
-
-
-
-```bash
-python tello_yolo_detect.py
-```
-
-- You should see: `Connecting to Tello...` then `Stream ready. Detecting...`.
-- A window shows the live stream; terminal prints detections in real time.
-- Press **q** to stop.
-
-If connection fails: check WiFi, ensure only one Tello is on, and that no firewall is blocking the drone.
-
-### 3. Confirm output format
-
-- Point the drone at objects (person, phone, bottle, etc.).
-- Check that printed lines look like: `bbox=[x1,y1,x2,y2]  conf=0.850  class=person`.
-- Confirm boxes on screen match the printed coordinates.
-
-Once all steps pass, the pipeline is ready; you can then **train your own model** and switch `model_path` in `atello.py` to your trained `.pt` file.
-
-## Run
+**Connect to the Tello's Wi-Fi**, then run:
 
 ```bash
-make run
+python atello.py
 ```
 
-- A window shows the live stream with drawn bounding boxes.
-- The terminal prints one line per detection.
-- Press **q** in the window to quit.
+Press `q` to quit — the drone will land automatically.
+
+**To sanity-check the flight controller without a drone:**
+
+```bash
+python flight_controller.py
+```
+
+## Training a Custom Model
+
+Datasets are versioned Roboflow exports located in `DatasetTest1/`. The active dataset (`v3i`) has one class: `ArduinoCar3`.
+
+```python
+from detector import train_model
+
+best_weights = train_model(
+    data="DatasetTest1/drone_vision.v3i.yolov8/data.yaml",
+    base_model="yolov8n.pt",
+    epochs=100,
+    imgsz=640,
+)
+print("Best weights saved to:", best_weights)
+```
+
+Trained weights are saved to `runs/detect/<name>/weights/best.pt`. Update the `model_path` in `atello.py` to use your custom weights.
 
 ## Configuration
 
-Edit the config block in `atello.py`:
+Key parameters to adjust in `atello.py` and the module constructors:
 
-| Option | Description |
-|--------|-------------|
-| `model_path` | `"yolov8n.pt"` (COCO, downloads automatically) or path to your custom `.pt` |
-| `target_classes` | `None` (all classes) or e.g. `["person", "car"]` to detect only those |
-| `conf_threshold` | Minimum confidence (0.0–1.0) |
+| Parameter | Default | Description |
+|---|---|---|
+| `model_path` | `yolov8n.pt` | Path to YOLOv8 weights (pretrained or custom) |
+| `target_classes` | `["laptop"]` | Class names/IDs to track; `None` = all classes |
+| `target_distance` | `150 cm` | Desired standoff distance from the target |
+| `known_width` | `24 cm` | Real physical width of the target object |
+| `focal_length` | `902.55 px` | Camera intrinsic — calibrate per device |
 
-## Output format
+PID gains (yaw, vertical, distance) can be tuned via `FlightController` constructor arguments or the `set_*_gains()` helper methods at runtime.
 
-Each detection is printed as:
+## Project Structure
 
 ```
-bbox=[x1,y1,x2,y2]  conf=0.850  class=person
+atello.py            # Main script — orchestrates drone + detection loop
+detector.py          # YOLODetector class + train_model() utility
+estimation.py        # positionEstimator — bounding box → distance (cm)
+flight_controller.py # PIDController + FlightController → RC commands
+requirements.txt
+DatasetTest1/        # Versioned YOLOv8 datasets (Roboflow exports)
+runs/detect/         # Training outputs and model weights
 ```
-
-- **bbox**: pixel coordinates in the displayed frame (top-left `(x1,y1)`, bottom-right `(x2,y2)`).
-- **conf**: detection confidence.
-- **class**: class name from the model (e.g. COCO: person, car, bottle).
-
-## Files
-
-- **atello.py** – Main script: Tello stream + YOLOv8 + real-time bbox output.
-- **detector.py** – `YOLODetector` (generic) and `ArduinoCarDetector` (legacy); used by the main script.

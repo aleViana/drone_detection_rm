@@ -10,47 +10,23 @@ class positionEstimator:
 
         #buffer
         self.distance_buffer = deque(maxlen=window_size)
-        self.x_offset_buffer = deque(maxlen=window_size)
-        self.y_offset_buffer = deque(maxlen=window_size)
+    
 
     def estimate_ps(self, box: list) -> dict | None:
-        """Called by the main loop to estimate the position of the detected object.
-
-        Parameters
-        ----------
-        box : [x1, y1, x2, y2]
-            Pixel coordinates of the detection bounding box.
-
-        Returns
-        -------
-        dict with smoothed 'distance', 'x_offset', 'y_offset', or None if the
-        bounding box is degenerate.
-        """
+        #Called for each bounding box. 
         x1, y1, x2, y2 = box
         bbox_width_px = x2 - x1
 
         if bbox_width_px <= 0:
             return None
 
-        # Pinhole model: distance = (real_width * focal_length) / bbox_width_px
+        # estimate distance.
         distance = (self.known_width * self.focal_length) / bbox_width_px
-
-        # Bounding-box centre
-        bbox_cx = (x1 + x2) / 2
-        bbox_cy = (y1 + y2) / 2
-
-        # Lateral offsets from frame centre (positive = right / down)
-        x_offset = (bbox_cx - self.cx) * distance / self.focal_length
-        y_offset = (bbox_cy - self.cy) * distance / self.focal_length
 
         # Push raw values into smoothing buffers
         self.distance_buffer.append(distance)
-        self.x_offset_buffer.append(x_offset)
-        self.y_offset_buffer.append(y_offset)
 
         # Return rolling-average estimates
         return {
-            "distance": float(np.mean(self.distance_buffer)),
-            "x_offset": float(np.mean(self.x_offset_buffer)),
-            "y_offset": float(np.mean(self.y_offset_buffer)),
+            "distance": float(np.mean(self.distance_buffer))
         }
