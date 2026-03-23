@@ -4,7 +4,7 @@ Real-time object detection on the **DJI Tello** video stream using **YOLOv8** (U
 
 ## Setup
 
-1. Connect your computer to the Tello WiFi when you’re ready to test the drone.
+1. Connect your computer to the Tello WiFi network.
 
 2. **Conda (recommended)** — create and activate the environment:
 
@@ -13,13 +13,6 @@ conda env create -f environment.yml
 conda activate drone_vision
 ```
 
-Or create the env manually and install with pip:
-
-```bash
-conda create -n tello-yolo python=3.10 -y
-conda activate tello-yolo
-pip install -r requirements.txt
-```
 
 **Without conda** — use a venv and pip:
 
@@ -51,21 +44,21 @@ If connection fails: check WiFi, ensure only one Tello is on, and that no firewa
 - Check that printed lines look like: `bbox=[x1,y1,x2,y2]  conf=0.850  class=person`.
 - Confirm boxes on screen match the printed coordinates.
 
-Once all steps pass, the pipeline is ready; you can then **train your own model** and switch `model_path` in `tello_yolo_detect.py` to your trained `.pt` file.
+Once all steps pass, the pipeline is ready; you can then **train your own model** and switch `model_path` in `atello.py` to your trained `.pt` file.
 
 ## Run
 
 ```bash
-python tello_yolo_detect.py
+make run
 ```
 
 - A window shows the live stream with drawn bounding boxes.
-- The terminal prints one line per detection: `bbox=[x1,y1,x2,y2]  conf=0.xx  class=name`
+- The terminal prints one line per detection.
 - Press **q** in the window to quit.
 
 ## Configuration
 
-Edit the config block in `tello_yolo_detect.py`:
+Edit the config block in `atello.py`:
 
 | Option | Description |
 |--------|-------------|
@@ -87,5 +80,5 @@ bbox=[x1,y1,x2,y2]  conf=0.850  class=person
 
 ## Files
 
-- **tello_yolo_detect.py** – Main script: Tello stream + YOLOv8 + real-time bbox output.
+- **atello.py** – Main script: Tello stream + YOLOv8 + real-time bbox output.
 - **detector.py** – `YOLODetector` (generic) and `ArduinoCarDetector` (legacy); used by the main script.
