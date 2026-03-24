@@ -50,6 +50,7 @@ class YOLODetector:
                 "class_id": cid,
                 "class_name": self.names.get(cid, "?"),
             })
+        #output a list of dictionaries
         return detections
 
     def draw(self, frame: np.ndarray, detections: list[dict]) -> np.ndarray:
